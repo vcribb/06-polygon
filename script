@@ -9,12 +9,14 @@ y 20
 move
 150 200 0
 apply
-display
+save
+box.ppm
 #clear the edge matrix, test the sphere
 clear
 sphere
 0 0 0 200
-display
+#save
+#sphere.ppm
 #rotate 90 degrees about y to check lines
 ident
 rotate
@@ -22,7 +24,8 @@ y 90
 move
 250 250 0
 apply
-display
+#save
+#sphere1.ppm
 #reset sphere, rotate 90 degrees about x to check lines
 ident
 move
@@ -34,7 +37,8 @@ x 90
 move
 250 250 0
 apply
-display
+save
+sphere2.ppm
 #reset sphere, rotate to make it look cool
 ident
 move

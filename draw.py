@@ -2,81 +2,103 @@ from display import *
 from matrix import *
 from gmath import *
 
-def add_polygon(polygons, x0, y0, z0, x1, y1, z1, x2, y2, z2):
-    add_point(polygons, x0, y0, z0)
-    add_point(polygons, x1, y1, z1)
-    add_point(polygons, x2, y2, z2)
+def add_polygon(points, x0, y0, z0, x1, y1, z1, x2, y2, z2):
+    add_point(points, x0, y0, z0)
+    add_point(points, x1, y1, z1)
+    add_point(points, x2, y2, z2)
     pass
 
 def draw_polygons(polygons, screen, color):
+    if len(polygons) < 3:
+        return
     counter = 0
-    while counter < len(polygons) - 2:
-        if dot_product(calculate_normal(polygons, counter), [0, 0, 1]) >= 0:
+    while counter < len(polygons) - 1:
+        if (calculate_normal(polygons, counter)[2] > 0):
             draw_line(int(polygons[counter][0]),
                       int(polygons[counter][1]),
-                      int(polygons[counter + 1][0]),
-                      int(polygons[counter + 1][1]),
+                      int(polygons[counter+1][0]),
+                      int(polygons[counter+1][1]),
                       screen, color)
-            draw_line(int(polygons[counter + 1][0]),
-                      int(polygons[counter + 1][1]),
-                      int(polygons[counter + 2][0]),
-                      int(polygons[counter + 2][1]),
+            draw_line(int(polygons[counter+1][0]),
+                      int(polygons[counter+1][1]),
+                      int(polygons[counter+2][0]),
+                      int(polygons[counter+2][1]),
                       screen, color)
-            draw_line(int(polygons[counter + 2][0]),
-                      int(polygons[counter + 2][1]),
+            draw_line(int(polygons[counter+2][0]),
+                      int(polygons[counter+2][1]),
                       int(polygons[counter][0]),
                       int(polygons[counter][1]),
                       screen, color)
-            counter+=3
+        counter+=3
 
 
-def add_box( polygons, x, y, z, width, height, depth ):
+def add_box(polygons, x, y, z, width, height, depth):
     x1 = x + width
     y1 = y - height
     z1 = z - depth
 
-    add_polygon(polygons, x, y, z, x, y1, z, x1, y1, z)
-    add_polygon(polygons, x, y, z, x1, y1, z, x1, y, z)
-   
-    add_polygon(polygons, x1, y, z1, x1, y1, z1, x, y1, z1)
-    add_polygon(polygons, x1, y, z1, x, y1, z1, x, y, z1)
+    add_edge(polygons, x, y, z, x+width, y, z)
+    add_edge(polygons, x+width, y, z, x+width, y-height, z)
+    add_edge(polygons, x+width, y-height, z, x, y-height, z)
+    add_edge(polygons, x, y-height, z, x, y, z)
 
-    add_polygon(polygons, x, y, z1, x1, y, z, x1, y, z1)
-    add_polygon(polygons, x, y, z1, x, y, z, x1, y, z)
+    add_edge(polygons, x, y, z-depth, x+width, y, z-depth)
+    add_edge(polygons, x+width, y, z-depth, x+width, y-height, z-depth)
+    add_edge(polygons, x+width, y-height, z-depth, x, y-height, z-depth)
+    add_edge(polygons, x, y-height, z-depth, x, y, z-depth)
 
-    add_polygon(polygons, x, y1, z, x1, y1, z1, x1, y1, z)
-    add_polygon(polygons, x, y1, z, x, y1, z1, x1, y1, z1)
-    
-    add_polygon(polygons, x, y, z1, x, y1, z, x, y, z)
-    add_polygon(polygons, x, y, z1, x, y1, z1, x, y1, z)
-    
-    add_polygon(polygons, x1, y, z, x1, y1, z, x1, y1, z1) 
-    add_polygon(polygons, x1, y, z, x1, y1, z1, x1, y, z1)
+    add_edge(polygons, x, y, z, x, y, z-depth)
+    add_edge(polygons, x+width, y, z, x+width, y, z-depth)
+    add_edge(polygons, x+width, y-height, z, x+width, y-height, z-depth)
+    add_edge(polygons, x, y-height, z, x, y-height, z-depth)
+
+    add_polygon(polygons, x, y, z, x1, y, z, x, y, z1)
+    add_polygon(polygons, x1, y, z1, x, y, z1, x1, y, z)
+
+    add_polygon(polygons, x1, y, z1, x1, y1, z, x, y1, z1)
+    add_polygon(polygons, x, y1, z, x, y1, z1, x1, y1, z)
+
+    add_polygon(polygons, x, y, z, x, y1, z, x1, y, z)
+    add_polygon(polygons, x1, y1, z, x1, y, z, x, y1, z)
+
+    add_polygon(polygons, x1, y1, z1, x, y1, z1, x1, y, z1)
+    add_polygon(polygons, x, y, z1, x1, y, z1, x, y1, z1)
+
+    add_polygon(polygons, x, y, z, x, y, z1, x, y1, z)
+    add_polygon(polygons, x, y1, z1, x, y1, z, x, y, z1)
+
+    add_polygon(polygons,x1,y1,z1,x1, y, z1, x1, y1, z)
+    add_polygon(polygons,x1,y,z, x1, y1, z, x1, y, z1)
 
 def add_sphere(polygons, cx, cy, cz, r, step ):
     points = generate_sphere(cx, cy, cz, r, step)
+
+    for item in points:
+        add_edge(polygons, item[0], item[1], item[2], item[0]+1, item[1]+1, item[2]+1)
 
     lat_start = 0
     lat_stop = step
     longt_start = 0
     longt_stop = step
 
-    step+=1
-    for lat in range(lat_start, lat_stop):
-        for longt in range(longt_start, longt_stop):
-            index = lat * step + longt
-            add_polygon(polygons, points[index][0], points[index][1],
-                        points[index][2], points[(index+1)%(len(points))][0],
-                        points[(index+1)%(len(points))][1],
-                        points[(index+1)%(len(points))][2],
-                        points[(index+step)%(len(points))][0],
-                        points[(index+step)%(len(points))][1],
-                        points[(index+step)%(len(points))][2])
-            add_polygon(polygons, points[index+1][0], points[index+1][1],
-                        points[index+1][2],
+    step+= 1
+    for x in range(lat_start, lat_stop):
+        for y in range(longt_start, longt_stop):
+            index = x*step + y
+            
+            add_polygon(polygons, points[index+1][0],
+                        points[index+1][1], points[index+1][2],
                         points[(index+step+1)%(len(points))][0],
                         points[(index+step+1)%(len(points))][1],
                         points[(index+step+1)%(len(points))][2],
+                        points[(index+step)%(len(points))][0],
+                        points[(index+step)%(len(points))][1],
+                        points[(index+step)%(len(points))][2])
+            add_polygon(polygons, points[index][0],
+                        points[index][1], points[index][2],
+                        points[(index+1)%(len(points))][0],
+                        points[(index+1)%(len(points))][1],
+                        points[(index+1)%(len(points))][2],
                         points[(index+step)%(len(points))][0],
                         points[(index+step)%(len(points))][1],
                         points[(index+step)%(len(points))][2])
